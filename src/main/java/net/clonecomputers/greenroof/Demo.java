@@ -1,15 +1,18 @@
 package net.clonecomputers.greenroof;
 
+import info.monitorenter.gui.chart.*;
+import info.monitorenter.gui.chart.traces.*;
+
 import java.awt.*;
 import java.util.*;
 
 import javax.swing.*;
 
-import info.monitorenter.gui.chart.*;
-import info.monitorenter.gui.chart.traces.*;
 import jssc.*;
 
 public class Demo extends JPanel implements Runnable {
+	private final JLabel currentValue;
+	private final JPanel chartPanel;
 	private final Chart2D mainChart;
 	private final ITrace2D mainTrace;
 	private final Chart2D scrollingChart;
@@ -21,16 +24,30 @@ public class Demo extends JPanel implements Runnable {
 		Demo app = new Demo();
 		window.setContentPane(app);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setMinimumSize(new Dimension(600,620));
+		window.setPreferredSize(new Dimension(600,620));
+		window.setSize(new Dimension(600,620));
 		window.setVisible(true);
 		app.run();
 	}
 	
 	public Demo() {
+		chartPanel = new JPanel(new GridLayout(2,1));
 		mainChart = new Chart2D();
 		scrollingChart = new Chart2D();
-		this.setLayout(new GridLayout(2,1));
-		add(mainChart);
-		add(scrollingChart);
+		this.setLayout(new BorderLayout());
+		mainChart.setPreferredSize(new Dimension(600,300));
+		scrollingChart.setPreferredSize(new Dimension(600,300));
+		chartPanel.add(mainChart);
+		chartPanel.add(scrollingChart);
+		chartPanel.setPreferredSize(new Dimension(600,600));
+		this.add(chartPanel,BorderLayout.CENTER);
+		
+		currentValue = new JLabel("0 gallons per minute", SwingConstants.CENTER);
+		this.add(currentValue,BorderLayout.NORTH);
+		
+		this.setPreferredSize(new Dimension(600,620));
+		
 		mainTrace = new Trace2DSimple("Data");
 		mainChart.addTrace(mainTrace);
 		scrollingTrace = new Trace2DLtd(200, "Data (last 20s)");
@@ -61,6 +78,7 @@ public class Demo extends JPanel implements Runnable {
 	private void addPoint(double y) {
 		mainTrace.addPoint(System.currentTimeMillis(), y);
 		scrollingTrace.addPoint(System.currentTimeMillis(), y);
+		currentValue.setText(String.format("%.05f gallons per minute", y));
 	}
 
 	@Override
